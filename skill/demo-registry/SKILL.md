@@ -15,7 +15,7 @@ or rewrite existing entries.
 - **Read (public, no auth):**
   `https://raw.githubusercontent.com/jepras/demo-registry/main/registry.json`
 - **Write (add an entry):** POST JSON to the Worker:
-  `https://demo-registry.<your-subdomain>.workers.dev`
+  `https://demo-registry.jeprasher.workers.dev`
   The Worker holds the only credential; you do not need a GitHub token.
 
 ## When a consultant wants to build a demo — ALWAYS check first
@@ -34,7 +34,7 @@ Only after a demo is actually built/available. Confirm the details with the
 consultant, then POST:
 
 ```
-POST https://demo-registry.<your-subdomain>.workers.dev
+POST https://demo-registry.jeprasher.workers.dev
 Content-Type: application/json
 
 {
