@@ -1,0 +1,56 @@
+name: Enforce append-only registry
+
+# Second safety net (the Worker is the first). Fails if any existing demo entry
+# is removed or modified — manually, via PR, or otherwise. Git history is the
+# ultimate backstop; this makes deletions a hard, visible failure.
+
+on:
+  pull_request:
+    paths: ["registry.json"]
+  push:
+    branches: [main]
+    paths: ["registry.json"]
+
+jobs:
+  append-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # need the previous version to diff against
+
+      - name: Verify no entries were removed or changed
+        run: |
+          node - <<'EOF'
+          const { execSync } = require("child_process");
+          const fs = require("fs");
+
+          const curr = JSON.parse(fs.readFileSync("registry.json", "utf8"));
+
+          let prevRaw;
+          try {
+            prevRaw = execSync("git show HEAD~1:registry.json", { encoding: "utf8" });
+          } catch {
+            console.log("No previous version of registry.json — nothing to compare.");
+            process.exit(0);
+          }
+          const prev = JSON.parse(prevRaw);
+
+          const currById = new Map((curr.demos || []).map(d => [d.id, d]));
+          const problems = [];
+
+          for (const old of prev.demos || []) {
+            const now = currById.get(old.id);
+            if (!now) {
+              problems.push(`Entry removed: ${old.id}`);
+            } else if (JSON.stringify(now) !== JSON.stringify(old)) {
+              problems.push(`Entry modified (must be immutable): ${old.id}`);
+            }
+          }
+
+          if (problems.length) {
+            console.error("Append-only violation:\n" + problems.join("\n"));
+            process.exit(1);
+          }
+          console.log(`OK — ${(curr.demos||[]).length} entries, none removed or modified.`);
+          EOF

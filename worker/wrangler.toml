@@ -1,0 +1,13 @@
+name = "demo-registry"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+REPO_OWNER = "jepras"
+REPO_NAME = "demo-registry"
+REPO_BRANCH = "main"
+# Lock writes to your Pages origin. Use "*" only while testing locally.
+ALLOWED_ORIGIN = "https://jepras.github.io"
+
+# GITHUB_TOKEN is NOT set here. It is a secret:
+#   wrangler secret put GITHUB_TOKEN

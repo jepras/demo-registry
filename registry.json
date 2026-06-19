@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "demos": [
+    {
+      "id": "2026-06-19-agentic-loan-workflow-pitch",
+      "title": "Agentic loan workflow pitch",
+      "type": "demo",
+      "url": "https://example.com/replace-me",
+      "screenshots": [],
+      "tags": ["lending", "agentic", "nordpension", "front-and-back-office"],
+      "summary": "Front + back office loan demo showing an agentic redesign of the loan approval workflow. Includes a clickable prototype and a presentation deck.",
+      "added": "2026-06-19",
+      "addedBy": "jeprasher@gmail.com"
+    }
+  ]
+}

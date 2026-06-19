@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo Registry</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --panel-2: #1c2330;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #9aa7b4;
+      --accent: #4493f8;
+      --accent-2: #2ea043;
+      --chip: #21304a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 32px 24px 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    h1 { margin: 0 0 4px; font-size: 28px; }
+    .sub { color: var(--muted); margin: 0; }
+    .toolbar {
+      max-width: 1100px;
+      margin: 16px auto 0;
+      padding: 0 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input[type="search"], input[type="text"], input[type="url"], textarea, select {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    input[type="search"] { flex: 1; min-width: 240px; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
+    button:hover { filter: brightness(1.1); }
+    .grid {
+      max-width: 1100px;
+      margin: 24px auto 64px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card h3 { margin: 0; font-size: 17px; }
+    .card .summary { color: var(--muted); font-size: 14px; margin: 0; }
+    .type {
+      display: inline-block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: var(--chip);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-weight: 700;
+      width: fit-content;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 2px 8px; }
+    .shots { display: flex; gap: 6px; overflow-x: auto; }
+    .shots img { height: 72px; border-radius: 6px; border: 1px solid var(--border); }
+    .card a.open { color: var(--accent); font-weight: 600; text-decoration: none; font-size: 14px; }
+    .card a.open:hover { text-decoration: underline; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: auto; }
+    dialog {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0;
+      max-width: 520px;
+      width: 92%;
+    }
+    dialog::backdrop { background: rgba(0,0,0,.6); }
+    .dialog-body { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-body h2 { margin: 0 0 4px; }
+    label { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .status { font-size: 13px; padding: 8px 0; }
+    .status.ok { color: var(--accent-2); }
+    .status.err { color: #f85149; }
+    .empty { text-align: center; color: var(--muted); padding: 48px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Demo Registry</h1>
+    <p class="sub">A searchable, append-only catalogue of demos, videos, prototypes and decks. Check here before building something new.</p>
+  </header>
+
+  <div class="toolbar">
+    <input type="search" id="search" placeholder="Search title, summary, tags, type…" />
+    <button id="addBtn">+ Add a demo</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <dialog id="addDialog">
+    <form method="dialog" class="dialog-body" id="addForm">
+      <h2>Add a demo</h2>
+      <p class="sub" style="margin:0 0 8px;font-size:13px;">Entries can only be added, never removed.</p>
+      <label>Title *<input type="text" name="title" required /></label>
+      <label>Type *
+        <select name="type" required>
+          <option value="demo">Demo / clickable prototype</option>
+          <option value="video">Video</option>
+          <option value="slides">Slides / deck</option>
+          <option value="prototype">Prototype</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label>URL *<input type="url" name="url" placeholder="https://…" required /></label>
+      <label>Screenshot URLs (one per line)<textarea name="screenshots" rows="2" placeholder="https://…/shot1.png"></textarea></label>
+      <label>Tags (comma-separated)<input type="text" name="tags" placeholder="lending, agentic" /></label>
+      <label>Summary *<textarea name="summary" rows="3" required></textarea></label>
+      <label>Your name or email<input type="text" name="addedBy" placeholder="you@example.com" /></label>
+      <div class="status" id="status"></div>
+      <div class="row">
+        <button type="button" class="secondary" id="cancelBtn">Cancel</button>
+        <button type="submit" id="submitBtn">Add demo</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    // ── Config ─────────────────────────────────────────────────────────────
+    // Raw registry file (read path — public, no auth).
+    const REGISTRY_URL = "https://raw.githubusercontent.com/jepras/demo-registry/main/registry.json";
+    // Cloudflare Worker endpoint (write path — holds the scoped token server-side).
+    // Replace after deploying the Worker.
+    const WORKER_URL = "https://demo-registry.<your-subdomain>.workers.dev";
+    // ───────────────────────────────────────────────────────────────────────
+
+    let demos = [];
+
+    async function load() {
+      try {
+        const res = await fetch(REGISTRY_URL + "?t=" + Date.now());
+        const data = await res.json();
+        demos = data.demos || [];
+        render(demos);
+      } catch (e) {
+        document.getElementById("grid").innerHTML =
+          '<div class="empty">Could not load the registry. Check REGISTRY_URL.</div>';
+      }
+    }
+
+    function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+    function card(d) {
+      const shots = (d.screenshots || []).map(s => `<a href="${esc(s)}" target="_blank" rel="noopener"><img src="${esc(s)}" alt="" loading="lazy"/></a>`).join("");
+      const tags = (d.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+      return `<div class="card">
+        <span class="type">${esc(d.type || "demo")}</span>
+        <h3>${esc(d.title)}</h3>
+        <p class="summary">${esc(d.summary)}</p>
+        ${shots ? `<div class="shots">${shots}</div>` : ""}
+        ${tags ? `<div class="tags">${tags}</div>` : ""}
+        <a class="open" href="${esc(d.url)}" target="_blank" rel="noopener">Open ↗</a>
+        <div class="meta">Added ${esc(d.added || "")}${d.addedBy ? " · " + esc(d.addedBy) : ""}</div>
+      </div>`;
+    }
+
+    function render(list) {
+      const grid = document.getElementById("grid");
+      if (!list.length) { grid.innerHTML = '<div class="empty">No demos yet. Be the first to add one.</div>'; return; }
+      grid.innerHTML = list.map(card).join("");
+    }
+
+    document.getElementById("search").addEventListener("input", e => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) return render(demos);
+      render(demos.filter(d => {
+        const hay = [d.title, d.summary, d.type, ...(d.tags || [])].join(" ").toLowerCase();
+        return q.split(/\s+/).every(term => hay.includes(term));
+      }));
+    });
+
+    // ── Add dialog ─────────────────────────────────────────────────────────
+    const dialog = document.getElementById("addDialog");
+    document.getElementById("addBtn").onclick = () => { document.getElementById("status").textContent = ""; dialog.showModal(); };
+    document.getElementById("cancelBtn").onclick = () => dialog.close();
+
+    document.getElementById("addForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const status = document.getElementById("status");
+      const btn = document.getElementById("submitBtn");
+      const entry = {
+        title: f.title.value.trim(),
+        type: f.type.value,
+        url: f.url.value.trim(),
+        screenshots: f.screenshots.value.split("\n").map(s => s.trim()).filter(Boolean),
+        tags: f.tags.value.split(",").map(s => s.trim()).filter(Boolean),
+        summary: f.summary.value.trim(),
+        addedBy: f.addedBy.value.trim()
+      };
+      status.className = "status"; status.textContent = "Submitting…"; btn.disabled = true;
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(entry)
+        });
+        const out = await res.json();
+        if (!res.ok) throw new Error(out.error || "Submission failed");
+        status.className = "status ok"; status.textContent = "Added! Refreshing…";
+        setTimeout(() => { dialog.close(); f.reset(); load(); }, 1200);
+      } catch (err) {
+        status.className = "status err"; status.textContent = err.message;
+      } finally { btn.disabled = false; }
+    });
+
+    load();
+  </script>
+</body>
+</html>
