@@ -74,6 +74,26 @@
       "summary": "The agent maps the deceased's finances, identifies assets and debt, generates a draft statement and coordinates communication with heirs and authorities.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-ai-risk-management-tool",
+      "title": "AI risk-management tool",
+      "type": "demo",
+      "url": "https://nordea-risk-tool.lovable.app/",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-a9ebf5bf.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-b04be987.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-3ab40865.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-df2018a6.png"
+      ],
+      "tags": [
+        "ai-workflow",
+        "risk",
+        "nordea"
+      ],
+      "summary": "AI-assisted risk management that lets you identify, structure and ask questions about your organisation's risks via a chat interface.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
