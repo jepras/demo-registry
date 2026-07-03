@@ -72,11 +72,13 @@
       "tags": [
         "agent-system",
         "estate",
-        "sydbank"
+        "sydbank",
+        "danish"
       ],
       "summary": "The agent maps the deceased's finances, identifies assets and debt, generates a draft statement and coordinates communication with heirs and authorities.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-ai-risk-management-tool",
