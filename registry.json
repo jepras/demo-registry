@@ -163,6 +163,20 @@
       "summary": "Agent-builder crewing demo. Login protected - password: IM-agentic-crewing-26. Author: Michel Poesze.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-fuji-deviation-management",
+      "title": "Fuji deviation management",
+      "type": "demo",
+      "url": "https://ca-counter-fda-frontend.redmeadow-d53948d0.swedencentral.azurecontainerapps.io/",
+      "screenshots": [],
+      "tags": [
+        "deviation-management",
+        "quality"
+      ],
+      "summary": "Deviation-management demo (Fuji). Author: Bertalan.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
