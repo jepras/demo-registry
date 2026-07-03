@@ -155,11 +155,13 @@
       "screenshots": [],
       "tags": [
         "agent-builder",
-        "project-method"
+        "project-method",
+        "english"
       ],
       "summary": "Agent-builder demo showing a project-method deliverables view. Author: Michel Poesze.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-crewing-agent",
