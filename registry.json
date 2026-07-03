@@ -135,6 +135,20 @@
       "summary": "AI-supported handling of AML alerts: gathers and prioritises alerts, assesses risk signals and helps quickly triage the cases that require follow-up, incl. suggested handling options.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-project-method",
+      "title": "Project method",
+      "type": "demo",
+      "url": "https://ca-benefit-react.victoriousocean-e7e97192.swedencentral.azurecontainerapps.io/deliverables",
+      "screenshots": [],
+      "tags": [
+        "agent-builder",
+        "project-method"
+      ],
+      "summary": "Agent-builder demo showing a project-method deliverables view. Author: Michel Poesze.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
