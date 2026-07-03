@@ -139,11 +139,13 @@
       "tags": [
         "compliance",
         "aml",
-        "workbench"
+        "workbench",
+        "english"
       ],
       "summary": "AI-supported handling of AML alerts: gathers and prioritises alerts, assesses risk signals and helps quickly triage the cases that require follow-up, incl. suggested handling options.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-project-method",
