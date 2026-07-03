@@ -50,11 +50,13 @@
       "tags": [
         "agent-system",
         "credit",
-        "nordea"
+        "nordea",
+        "english"
       ],
       "summary": "The agent automatically pulls data from internal systems and external bureaus, assesses changes in the customer's finances and flags cases that require human attention.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-estate-administration-agent",
