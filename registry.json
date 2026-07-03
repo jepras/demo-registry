@@ -226,6 +226,26 @@
       "summary": "Agent that drafts a complaint document (klageskrift). Author: Magnus Berg Sletfjerding.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-order-to-invoice-agentic-demo",
+      "title": "Order-to-Invoice Agentic Demo",
+      "type": "demo",
+      "url": "https://claude.ai/artifacts/latest/fb033450-7874-48d6-8859-ac1142dfc55d",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-da703e7b.png"
+      ],
+      "tags": [
+        "order-to-invoice",
+        "customer-care",
+        "sap",
+        "salesforce",
+        "customer-service",
+        "order-processing"
+      ],
+      "summary": "Ten AI Agents running order entry, order processing, invoicing and stock replenishment instead of traditional Customer Service.\n\nA PO arrives by email in PDF format. Agents take it from there: one extracts the data from the PDF, converts units against the ERP automatically, checks for third-party material, tracks delivery and installation status, and drafts and sends the invoice. Two agents run independently of any single order, one watches the inbox, one monitors stock levels and automatically creates replenishment orders. The associate steps in only to approve the order and the invoice.",
+      "addedBy": "Anastasia Frøsig",
+      "added": "2026-07-03"
     }
   ]
 }
