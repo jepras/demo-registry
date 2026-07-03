@@ -308,6 +308,27 @@
       dialog.showModal();
     }
 
+    // Prefill the Add dialog from URL query params, e.g. from a link Claude
+    // generates: ?title=…&type=…&url=…&tags=…&summary=…&addedBy=…
+    // Screenshots are intentionally never prefilled — the user adds those.
+    function prefillFromQuery() {
+      const p = new URLSearchParams(location.search);
+      // Only act if at least one meaningful field is present.
+      if (!["title", "url", "summary", "type", "tags", "addedBy"].some(k => p.has(k))) return;
+      openAdd();
+      if (p.has("title")) form.title.value = p.get("title");
+      if (p.has("url")) form.url.value = p.get("url");
+      if (p.has("summary")) form.summary.value = p.get("summary");
+      if (p.has("tags")) form.tags.value = p.get("tags");
+      if (p.has("addedBy")) form.addedBy.value = p.get("addedBy");
+      if (p.has("type")) {
+        const t = p.get("type").toLowerCase();
+        if ([...form.type.options].some(o => o.value === t)) form.type.value = t;
+      }
+      document.getElementById("dialogNote").textContent =
+        "Prefilled from your link. Add one or two screenshots below, then submit.";
+    }
+
     document.getElementById("addBtn").onclick = openAdd;
     document.getElementById("cancelBtn").onclick = () => dialog.close();
     // Edit buttons are rendered per card, so delegate from the grid.
@@ -366,6 +387,7 @@
     });
 
     load();
+    prefillFromQuery();
   </script>
 </body>
 </html>
