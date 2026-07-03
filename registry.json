@@ -177,6 +177,20 @@
       "summary": "Deviation-management demo (Fuji). Author: Bertalan.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-ai-report-builder",
+      "title": "AI report builder",
+      "type": "video",
+      "url": "https://drive.google.com/file/d/1jG3ffJdzS9lR3q58rB19WdtrgGxLBMIU/view?usp=drive_link",
+      "screenshots": [],
+      "tags": [
+        "document-creator",
+        "reporting"
+      ],
+      "summary": "Creates professional reports in minutes from uploaded data; exports to PDF, PPTX or DOCX.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
