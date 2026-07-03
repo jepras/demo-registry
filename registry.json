@@ -117,11 +117,13 @@
         "agent-system",
         "kyc",
         "aml",
-        "compliance"
+        "compliance",
+        "danish"
       ],
       "summary": "AI agent orchestration of KYC onboarding and the ongoing updating of ODD and EDD.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-aml-alert-handling-compliance-workbench",
