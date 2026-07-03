@@ -115,6 +115,26 @@
       "summary": "AI agent orchestration of KYC onboarding and the ongoing updating of ODD and EDD.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-aml-alert-handling-compliance-workbench",
+      "title": "AML alert handling - Compliance Workbench",
+      "type": "demo",
+      "url": "https://alarm-behandler.fly.dev/",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-ab3fe290.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-6317b191.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-96932f1e.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-dd20726b.png"
+      ],
+      "tags": [
+        "compliance",
+        "aml",
+        "workbench"
+      ],
+      "summary": "AI-supported handling of AML alerts: gathers and prioritises alerts, assesses risk signals and helps quickly triage the cases that require follow-up, incl. suggested handling options.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
