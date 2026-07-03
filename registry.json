@@ -197,11 +197,13 @@
       "screenshots": [],
       "tags": [
         "document-creator",
-        "reporting"
+        "reporting",
+        "english"
       ],
       "summary": "Creates professional reports in minutes from uploaded data; exports to PDF, PPTX or DOCX.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-complaint-document-agent-klageskrift",
