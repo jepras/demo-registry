@@ -191,6 +191,22 @@
       "summary": "Creates professional reports in minutes from uploaded data; exports to PDF, PPTX or DOCX.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-complaint-document-agent-klageskrift",
+      "title": "Complaint document agent (Klageskrift)",
+      "type": "video",
+      "url": "https://drive.google.com/file/d/1jNMcCfmSJPc27n67Mqe0fyLYhl9vaWPN/view?usp=drive_link",
+      "screenshots": [],
+      "tags": [
+        "agent-system",
+        "legal",
+        "klageskrift",
+        "danish"
+      ],
+      "summary": "Agent that drafts a complaint document (klageskrift). Author: Magnus Berg Sletfjerding.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
