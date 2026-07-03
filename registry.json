@@ -28,7 +28,8 @@
       "tags": [
         "agent-system",
         "lending",
-        "home-loan"
+        "home-loan",
+        "danish"
       ],
       "summary": "Receives the application, collects documents, performs the credit assessment and presents a finished recommendation for one-click adviser approval",
       "addedBy": "jere@thetechcollective.eu",
