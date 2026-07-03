@@ -7,10 +7,32 @@
       "type": "demo",
       "url": "https://example.com/replace-me",
       "screenshots": [],
-      "tags": ["lending", "agentic", "nordpension", "front-and-back-office"],
+      "tags": [
+        "lending",
+        "agentic",
+        "nordpension",
+        "front-and-back-office"
+      ],
       "summary": "Front + back office loan demo showing an agentic redesign of the loan approval workflow. Includes a clickable prototype and a presentation deck.",
       "added": "2026-06-19",
       "addedBy": "jeprasher@gmail.com"
+    },
+    {
+      "id": "2026-07-03-home-loan-agent",
+      "title": "Home-loan agent",
+      "type": "video",
+      "url": "https://implementcg.sharepoint.com/sites/2023-0526/_layouts/15/stream.aspx?id=%2Fsites%2F2023%2D0526%2FDelte%20dokumenter%2FGeneral%2F0%2E3%20Templates%20and%20guides%2Fdemos%2Fbolig%C3%A5n%2Emov&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E23a5bb16%2D163f%2D4c60%2Dbcfd%2D46610a440db0",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-17f78c0b.png"
+      ],
+      "tags": [
+        "agent-system",
+        "lending",
+        "home-loan"
+      ],
+      "summary": "Receives the application, collects documents, performs the credit assessment and presents a finished recommendation for one-click adviser approval.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
