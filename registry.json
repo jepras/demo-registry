@@ -187,11 +187,13 @@
       "screenshots": [],
       "tags": [
         "deviation-management",
-        "quality"
+        "quality",
+        "english"
       ],
       "summary": "Deviation-management demo (Fuji). Author: Bertalan.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-ai-report-builder",
