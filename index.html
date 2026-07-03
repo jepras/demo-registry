@@ -174,6 +174,22 @@
     .status.ok { color: oklch(0.52 0.13 155); }
     .status.err { color: var(--destructive); }
     .empty { text-align: center; color: var(--muted-foreground); padding: 48px; }
+    /* Draws the eye to the screenshot upload when a link prefilled everything else. */
+    label.needs-action {
+      background: oklch(0.97 0.04 85);
+      border: 1px solid oklch(0.75 0.11 78);
+      border-radius: calc(var(--radius) - 2px);
+      padding: 12px;
+      margin: 2px 0;
+    }
+    label.needs-action .hint {
+      font-weight: 600;
+      color: oklch(0.45 0.11 60);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    label.needs-action .hint::before { content: "↑"; font-size: 15px; }
   </style>
 </head>
 <body>
@@ -205,7 +221,7 @@
         </select>
       </label>
       <label>URL *<input type="url" name="url" placeholder="https://…" required /></label>
-      <label>Upload screenshots<input type="file" name="screenshotFiles" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple /></label>
+      <label id="uploadField"><span class="hint">Upload screenshots</span><input type="file" name="screenshotFiles" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple /></label>
       <label>…or paste screenshot URLs (one per line)<textarea name="screenshots" rows="2" placeholder="https://…/shot1.png"></textarea></label>
       <label>Tags (comma-separated)<input type="text" name="tags" placeholder="lending, agentic" /></label>
       <label>Summary *<textarea name="summary" rows="3" required></textarea></label>
@@ -281,6 +297,7 @@
 
     function openAdd() {
       form.reset();
+      document.getElementById("uploadField").classList.remove("needs-action");
       document.getElementById("editId").value = "";
       document.getElementById("dialogTitle").textContent = "Add a demo";
       document.getElementById("dialogNote").textContent = "New entries are appended — existing ones are never removed.";
@@ -293,6 +310,7 @@
       const d = demos.find(x => x.id === id);
       if (!d) return;
       form.reset();
+      document.getElementById("uploadField").classList.remove("needs-action");
       document.getElementById("editId").value = d.id;
       form.title.value = d.title || "";
       form.type.value = d.type || "demo";
@@ -327,7 +345,14 @@
       }
       document.getElementById("dialogNote").textContent =
         "Prefilled from your link. Add one or two screenshots below, then submit.";
+      // Everything else is filled — draw the eye to the one field that isn't.
+      document.getElementById("uploadField").classList.add("needs-action");
     }
+
+    // Once files are chosen, the highlight has done its job.
+    document.querySelector('[name=screenshotFiles]').addEventListener("change", () => {
+      document.getElementById("uploadField").classList.remove("needs-action");
+    });
 
     document.getElementById("addBtn").onclick = openAdd;
     document.getElementById("cancelBtn").onclick = () => dialog.close();
