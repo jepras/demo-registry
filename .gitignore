@@ -2,6 +2,10 @@
 worker/node_modules/
 worker/.wrangler/
 
+# Local-only working files (internal deck, extracted assets, browser-automation output)
+docs/
+.playwright-mcp/
+
 # wrangler files
 .wrangler
 .dev.vars*

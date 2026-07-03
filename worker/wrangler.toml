@@ -8,6 +8,9 @@ REPO_NAME = "demo-registry"
 REPO_BRANCH = "main"
 # Lock writes to your Pages origin. Use "*" only while testing locally.
 ALLOWED_ORIGIN = "https://jepras.github.io"
+# Optional: public base URL for uploaded screenshots (POST /upload commits them to
+# screenshots/ in the repo). Defaults to the repo's raw.githubusercontent path.
+# SCREENSHOT_BASE_URL = "https://jepras.github.io/demo-registry/screenshots"
 
 # GITHUB_TOKEN is NOT set here. It is a secret:
 #   wrangler secret put GITHUB_TOKEN

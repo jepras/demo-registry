@@ -3,37 +3,52 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Demo Registry</title>
+  <title>Demo registry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* shadcn/ui warm-neutral theme (matches the "front & back" demos) */
     :root {
-      --bg: #0d1117;
-      --panel: #161b22;
-      --panel-2: #1c2330;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #9aa7b4;
-      --accent: #4493f8;
-      --accent-2: #2ea043;
-      --chip: #21304a;
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.153 0.006 107.1);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.153 0.006 107.1);
+      --primary: oklch(0.228 0.013 107.4);
+      --primary-foreground: oklch(0.988 0.003 106.5);
+      --secondary: oklch(0.966 0.005 106.5);
+      --secondary-foreground: oklch(0.228 0.013 107.4);
+      --muted: oklch(0.966 0.005 106.5);
+      --muted-foreground: oklch(0.55 0.031 107.3);
+      --accent: oklch(0.966 0.005 106.5);
+      --accent-foreground: oklch(0.228 0.013 107.4);
+      --border: oklch(0.923 0.007 106.5);
+      --input: oklch(0.923 0.007 106.5);
+      --ring: oklch(0.737 0.021 106.9);
+      --destructive: oklch(0.577 0.245 27.3);
+      --radius: 0.65rem;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.08);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
     header {
-      padding: 32px 24px 16px;
+      padding: 48px 24px 8px;
       max-width: 1100px;
       margin: 0 auto;
     }
-    h1 { margin: 0 0 4px; font-size: 28px; }
-    .sub { color: var(--muted); margin: 0; }
+    h1 { margin: 0 0 6px; font-size: 30px; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { color: var(--muted-foreground); margin: 0; font-size: 15px; max-width: 60ch; }
     .toolbar {
       max-width: 1100px;
-      margin: 16px auto 0;
+      margin: 24px auto 0;
       padding: 0 24px;
       display: flex;
       gap: 12px;
@@ -41,88 +56,129 @@
       align-items: center;
     }
     input[type="search"], input[type="text"], input[type="url"], textarea, select {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-      padding: 10px 12px;
+      background: var(--background);
+      border: 1px solid var(--input);
+      color: var(--foreground);
+      border-radius: calc(var(--radius) - 2px);
+      padding: 9px 12px;
       font-size: 14px;
       font-family: inherit;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    input::placeholder, textarea::placeholder { color: var(--muted-foreground); opacity: .7; }
+    input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: none;
+      border-color: var(--ring);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 40%, transparent);
     }
     input[type="search"] { flex: 1; min-width: 240px; }
     button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: 1px solid transparent;
+      border-radius: calc(var(--radius) - 2px);
+      padding: 9px 16px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
+      transition: background-color .15s, box-shadow .15s, opacity .15s;
     }
-    button.secondary { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
-    button:hover { filter: brightness(1.1); }
+    button:hover { background: color-mix(in oklab, var(--primary) 90%, transparent); }
+    button.secondary {
+      background: var(--background);
+      border: 1px solid var(--border);
+      color: var(--foreground);
+    }
+    button.secondary:hover { background: var(--muted); }
+    button:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 40%, transparent); }
+    button:disabled { opacity: .5; pointer-events: none; }
     .grid {
       max-width: 1100px;
-      margin: 24px auto 64px;
+      margin: 28px auto 80px;
       padding: 0 24px;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 16px;
     }
     .card {
-      background: var(--panel);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: var(--radius);
+      padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .15s, border-color .15s;
     }
-    .card h3 { margin: 0; font-size: 17px; }
-    .card .summary { color: var(--muted); font-size: 14px; margin: 0; }
+    .card:hover { box-shadow: var(--shadow-md); border-color: color-mix(in oklab, var(--foreground) 12%, var(--border)); }
+    .card h3 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+    .card .summary { color: var(--muted-foreground); font-size: 14px; margin: 0; }
+    /* pill badge, sentence-case (shadcn secondary badge) */
     .type {
-      display: inline-block;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      background: var(--chip);
-      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      text-transform: capitalize;
+      background: var(--secondary);
+      color: var(--secondary-foreground);
+      border: 1px solid var(--border);
       border-radius: 999px;
       padding: 2px 10px;
-      font-weight: 700;
+      font-weight: 500;
       width: fit-content;
     }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-    .tag { font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 2px 8px; }
-    .shots { display: flex; gap: 6px; overflow-x: auto; }
-    .shots img { height: 72px; border-radius: 6px; border: 1px solid var(--border); }
-    .card a.open { color: var(--accent); font-weight: 600; text-decoration: none; font-size: 14px; }
-    .card a.open:hover { text-decoration: underline; }
-    .meta { font-size: 12px; color: var(--muted); margin-top: auto; }
-    dialog {
-      background: var(--panel);
-      color: var(--text);
+    .tag {
+      font-size: 12px;
+      background: var(--muted);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      color: var(--muted-foreground);
+      border-radius: calc(var(--radius) - 3px);
+      padding: 2px 8px;
+    }
+    .shots { display: flex; gap: 6px; overflow-x: auto; }
+    .shots img { height: 72px; border-radius: calc(var(--radius) - 3px); border: 1px solid var(--border); }
+    .actions { display: flex; align-items: center; gap: 12px; }
+    .card a.open { color: var(--foreground); font-weight: 500; text-decoration: none; font-size: 14px; }
+    .card a.open:hover { text-decoration: underline; }
+    /* link-style secondary action, so it doesn't compete with the primary button */
+    .edit-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted-foreground);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 0;
+      cursor: pointer;
+    }
+    .edit-btn:hover { background: transparent; color: var(--foreground); text-decoration: underline; }
+    .meta { font-size: 12px; color: var(--muted-foreground); margin-top: auto; }
+    dialog {
+      background: var(--card);
+      color: var(--card-foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 0;
       max-width: 520px;
       width: 92%;
+      box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.25);
     }
-    dialog::backdrop { background: rgba(0,0,0,.6); }
+    dialog::backdrop { background: rgb(0 0 0 / 0.4); backdrop-filter: blur(2px); }
     .dialog-body { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
-    .dialog-body h2 { margin: 0 0 4px; }
-    label { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    .dialog-body h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    label { font-size: 13px; color: var(--foreground); font-weight: 500; display: flex; flex-direction: column; gap: 5px; }
     .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .status { font-size: 13px; padding: 8px 0; }
-    .status.ok { color: var(--accent-2); }
-    .status.err { color: #f85149; }
-    .empty { text-align: center; color: var(--muted); padding: 48px; }
+    .status.ok { color: oklch(0.52 0.13 155); }
+    .status.err { color: var(--destructive); }
+    .empty { text-align: center; color: var(--muted-foreground); padding: 48px; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Demo Registry</h1>
+    <h1>Demo registry</h1>
     <p class="sub">A searchable, append-only catalogue of demos, videos, prototypes and decks. Check here before building something new.</p>
   </header>
 
@@ -135,8 +191,9 @@
 
   <dialog id="addDialog">
     <form method="dialog" class="dialog-body" id="addForm">
-      <h2>Add a demo</h2>
-      <p class="sub" style="margin:0 0 8px;font-size:13px;">Entries can only be added, never removed.</p>
+      <h2 id="dialogTitle">Add a demo</h2>
+      <p class="sub" id="dialogNote" style="margin:0 0 8px;font-size:13px;">Entries can only be added, never removed.</p>
+      <input type="hidden" name="id" id="editId" value="" />
       <label>Title *<input type="text" name="title" required /></label>
       <label>Type *
         <select name="type" required>
@@ -148,7 +205,8 @@
         </select>
       </label>
       <label>URL *<input type="url" name="url" placeholder="https://…" required /></label>
-      <label>Screenshot URLs (one per line)<textarea name="screenshots" rows="2" placeholder="https://…/shot1.png"></textarea></label>
+      <label>Upload screenshots<input type="file" name="screenshotFiles" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple /></label>
+      <label>…or paste screenshot URLs (one per line)<textarea name="screenshots" rows="2" placeholder="https://…/shot1.png"></textarea></label>
       <label>Tags (comma-separated)<input type="text" name="tags" placeholder="lending, agentic" /></label>
       <label>Summary *<textarea name="summary" rows="3" required></textarea></label>
       <label>Your name or email<input type="text" name="addedBy" placeholder="you@example.com" /></label>
@@ -194,8 +252,11 @@
         <p class="summary">${esc(d.summary)}</p>
         ${shots ? `<div class="shots">${shots}</div>` : ""}
         ${tags ? `<div class="tags">${tags}</div>` : ""}
-        <a class="open" href="${esc(d.url)}" target="_blank" rel="noopener">Open ↗</a>
-        <div class="meta">Added ${esc(d.added || "")}${d.addedBy ? " · " + esc(d.addedBy) : ""}</div>
+        <div class="actions">
+          <a class="open" href="${esc(d.url)}" target="_blank" rel="noopener">Open ↗</a>
+          <button class="edit-btn" data-edit="${esc(d.id)}">Edit</button>
+        </div>
+        <div class="meta">Added ${esc(d.added || "")}${d.addedBy ? " · " + esc(d.addedBy) : ""}${d.edited ? " · edited " + esc(d.edited) : ""}</div>
       </div>`;
     }
 
@@ -214,16 +275,54 @@
       }));
     });
 
-    // ── Add dialog ─────────────────────────────────────────────────────────
+    // ── Add / edit dialog ────────────────────────────────────────────────────
     const dialog = document.getElementById("addDialog");
-    document.getElementById("addBtn").onclick = () => { document.getElementById("status").textContent = ""; dialog.showModal(); };
+    const form = document.getElementById("addForm");
+
+    function openAdd() {
+      form.reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("dialogTitle").textContent = "Add a demo";
+      document.getElementById("dialogNote").textContent = "New entries are appended — existing ones are never removed.";
+      document.getElementById("submitBtn").textContent = "Add demo";
+      document.getElementById("status").textContent = "";
+      dialog.showModal();
+    }
+
+    function openEdit(id) {
+      const d = demos.find(x => x.id === id);
+      if (!d) return;
+      form.reset();
+      document.getElementById("editId").value = d.id;
+      form.title.value = d.title || "";
+      form.type.value = d.type || "demo";
+      form.url.value = d.url || "";
+      form.screenshots.value = (d.screenshots || []).join("\n");
+      form.tags.value = (d.tags || []).join(", ");
+      form.summary.value = d.summary || "";
+      form.addedBy.value = d.addedBy || "";
+      document.getElementById("dialogTitle").textContent = "Edit demo";
+      document.getElementById("dialogNote").textContent = "Editing an existing entry — changes overwrite the current fields.";
+      document.getElementById("submitBtn").textContent = "Save changes";
+      document.getElementById("status").textContent = "";
+      dialog.showModal();
+    }
+
+    document.getElementById("addBtn").onclick = openAdd;
     document.getElementById("cancelBtn").onclick = () => dialog.close();
+    // Edit buttons are rendered per card, so delegate from the grid.
+    document.getElementById("grid").addEventListener("click", (e) => {
+      const btn = e.target.closest(".edit-btn");
+      if (btn) openEdit(btn.dataset.edit);
+    });
 
     document.getElementById("addForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const f = e.target;
       const status = document.getElementById("status");
       const btn = document.getElementById("submitBtn");
+      const editId = document.getElementById("editId").value.trim();
+      const editing = Boolean(editId);
       const entry = {
         title: f.title.value.trim(),
         type: f.type.value,
@@ -233,8 +332,25 @@
         summary: f.summary.value.trim(),
         addedBy: f.addedBy.value.trim()
       };
-      status.className = "status"; status.textContent = "Submitting…"; btn.disabled = true;
+      if (editing) entry.id = editId;
+      status.className = "status"; status.textContent = editing ? "Saving…" : "Submitting…"; btn.disabled = true;
       try {
+        // Upload any chosen image files first; their returned URLs join the list.
+        const files = Array.from(f.screenshotFiles.files || []);
+        if (files.length) {
+          if (entry.screenshots.length + files.length > 10)
+            throw new Error("Max 10 screenshots per demo.");
+          for (let i = 0; i < files.length; i++) {
+            status.textContent = `Uploading screenshot ${i + 1} of ${files.length}…`;
+            const fd = new FormData();
+            fd.append("file", files[i]);
+            const up = await fetch(WORKER_URL + "/upload", { method: "POST", body: fd });
+            const upOut = await up.json();
+            if (!up.ok) throw new Error(upOut.error || "Screenshot upload failed");
+            entry.screenshots.push(upOut.url);
+          }
+          status.textContent = editing ? "Saving…" : "Submitting…";
+        }
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -242,7 +358,7 @@
         });
         const out = await res.json();
         if (!res.ok) throw new Error(out.error || "Submission failed");
-        status.className = "status ok"; status.textContent = "Added! Refreshing…";
+        status.className = "status ok"; status.textContent = (editing ? "Saved!" : "Added!") + " Refreshing…";
         setTimeout(() => { dialog.close(); f.reset(); load(); }, 1200);
       } catch (err) {
         status.className = "status err"; status.textContent = err.message;

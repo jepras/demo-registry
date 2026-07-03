@@ -50,6 +50,20 @@ Content-Type: application/json
 
 The server assigns `id` and `added` (date). On success it returns `{ "ok": true, "id": "…" }`.
 
+### Uploading screenshots
+
+`screenshots` must be http/https image URLs. If you have local image files, upload
+them first — POST each one as multipart to the `/upload` route, which commits it to
+`screenshots/` in the repo and returns a hosted URL to put in `screenshots`:
+
+```
+curl -X POST https://demo-registry.jeprasher.workers.dev/upload -F "file=@shot1.png"
+# → { "ok": true, "url": "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-ab12cd34.png" }
+```
+
+Limits: one file per request, ≤ 5 MB, types png/jpeg/webp/gif/svg. Then include the
+returned URL(s) in the entry's `screenshots` array (max 10).
+
 ### Rules
 - Required: `title`, `url` (valid http/https), `summary`. Others are optional.
 - `url` and every `screenshots` entry must be valid http/https URLs.

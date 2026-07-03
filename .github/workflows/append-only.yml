@@ -1,8 +1,9 @@
-name: Enforce append-only registry
+name: Enforce no-delete registry
 
 # Second safety net (the Worker is the first). Fails if any existing demo entry
-# is removed or modified — manually, via PR, or otherwise. Git history is the
-# ultimate backstop; this makes deletions a hard, visible failure.
+# is REMOVED — manually, via PR, or otherwise. Entries may be edited in place
+# (the Worker supports this), so modifications are allowed; only deletions are a
+# hard, visible failure. Git history is the ultimate backstop.
 
 on:
   pull_request:
@@ -12,14 +13,14 @@ on:
     paths: ["registry.json"]
 
 jobs:
-  append-only:
+  no-delete:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2 # need the previous version to diff against
 
-      - name: Verify no entries were removed or changed
+      - name: Verify no entries were removed
         run: |
           node - <<'EOF'
           const { execSync } = require("child_process");
@@ -40,17 +41,14 @@ jobs:
           const problems = [];
 
           for (const old of prev.demos || []) {
-            const now = currById.get(old.id);
-            if (!now) {
+            if (!currById.has(old.id)) {
               problems.push(`Entry removed: ${old.id}`);
-            } else if (JSON.stringify(now) !== JSON.stringify(old)) {
-              problems.push(`Entry modified (must be immutable): ${old.id}`);
             }
           }
 
           if (problems.length) {
-            console.error("Append-only violation:\n" + problems.join("\n"));
+            console.error("No-delete violation:\n" + problems.join("\n"));
             process.exit(1);
           }
-          console.log(`OK — ${(curr.demos||[]).length} entries, none removed or modified.`);
+          console.log(`OK — ${(curr.demos||[]).length} entries, none removed.`);
           EOF
