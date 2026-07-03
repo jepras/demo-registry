@@ -94,11 +94,13 @@
       "tags": [
         "ai-workflow",
         "risk",
-        "nordea"
+        "nordea",
+        "english"
       ],
       "summary": "AI-assisted risk management that lets you identify, structure and ask questions about your organisation's risks via a chat interface.",
       "addedBy": "jere@thetechcollective.eu",
-      "added": "2026-07-03"
+      "added": "2026-07-03",
+      "edited": "2026-07-03"
     },
     {
       "id": "2026-07-03-kyc-odd-edd-aml-kyc-co-pilot",
