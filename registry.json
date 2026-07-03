@@ -54,6 +54,26 @@
       "summary": "The agent automatically pulls data from internal systems and external bureaus, assesses changes in the customer's finances and flags cases that require human attention.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-estate-administration-agent",
+      "title": "Estate-administration agent",
+      "type": "video",
+      "url": "https://drive.google.com/file/d/1Da_n_3WjfKYqWXZuGLfMLaeva9u1eu5H/view",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-424562a3.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-2a40ddfc.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-6b564153.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-0df20bfe.png"
+      ],
+      "tags": [
+        "agent-system",
+        "estate",
+        "sydbank"
+      ],
+      "summary": "The agent maps the deceased's finances, identifies assets and debt, generates a draft statement and coordinates communication with heirs and authorities.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
