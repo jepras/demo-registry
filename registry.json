@@ -94,6 +94,27 @@
       "summary": "AI-assisted risk management that lets you identify, structure and ask questions about your organisation's risks via a chat interface.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03"
+    },
+    {
+      "id": "2026-07-03-kyc-odd-edd-aml-kyc-co-pilot",
+      "title": "KYC / ODD / EDD - AML KYC Co-pilot",
+      "type": "demo",
+      "url": "https://6a16fb9c1af2050008dacfc3--kyc-odd-edd.netlify.app/",
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-d3983393.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-cee274d9.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-29dd183b.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-03-56776af6.png"
+      ],
+      "tags": [
+        "agent-system",
+        "kyc",
+        "aml",
+        "compliance"
+      ],
+      "summary": "AI agent orchestration of KYC onboarding and the ongoing updating of ODD and EDD.",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-03"
     }
   ]
 }
