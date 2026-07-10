@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Demo registry</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23292722'/%3E%3Crect x='8' y='8' width='16' height='4.5' rx='1.6' fill='%23f5f3ee'/%3E%3Crect x='8' y='14' width='16' height='4.5' rx='1.6' fill='%23f5f3ee' opacity='0.72'/%3E%3Crect x='8' y='20' width='16' height='4.5' rx='1.6' fill='%23f5f3ee' opacity='0.46'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -129,6 +130,20 @@
       font-weight: 500;
       width: fit-content;
     }
+    .badge-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .featured {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .card.is-featured { border-color: var(--ring); }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .tag {
       font-size: 12px;
@@ -241,7 +256,15 @@
     // Cloudflare Worker endpoint (write path — holds the scoped token server-side).
     // Replace after deploying the Worker.
     const WORKER_URL = "https://demo-registry.jeprasher.workers.dev";
+    // Featured demos, pinned to the top of the list regardless of date.
+    // Kept here (not in registry.json) because submissions are appended
+    // directly to the remote registry — this list stays under our control.
+    // Add a demo's "id" to feature it; order here sets order among featured.
+    const FEATURED_IDS = ["2026-07-03-order-to-invoice-agentic-demo"];
     // ───────────────────────────────────────────────────────────────────────
+
+    const featuredRank = new Map(FEATURED_IDS.map((id, i) => [id, i]));
+    const isFeatured = d => featuredRank.has(d.id);
 
     let demos = [];
 
@@ -249,7 +272,7 @@
       try {
         const res = await fetch(REGISTRY_URL + "?t=" + Date.now());
         const data = await res.json();
-        demos = data.demos || [];
+        demos = sortDemos(data.demos || []);
         render(demos);
       } catch (e) {
         document.getElementById("grid").innerHTML =
@@ -257,13 +280,30 @@
       }
     }
 
+    // Featured demos (see FEATURED_IDS) are pinned to the top in list order;
+    // the rest follow, most recent first. Ties fall back to a stable id sort.
+    function sortDemos(list) {
+      return list.slice().sort((a, b) => {
+        const fa = isFeatured(a), fb = isFeatured(b);
+        if (fa && fb) return featuredRank.get(a.id) - featuredRank.get(b.id);
+        if (fa !== fb) return fa ? -1 : 1;
+        const da = a.added || "", db = b.added || "";
+        if (da !== db) return db.localeCompare(da);
+        return String(b.id || "").localeCompare(String(a.id || ""));
+      });
+    }
+
     function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
 
     function card(d) {
       const shots = (d.screenshots || []).map(s => `<a href="${esc(s)}" target="_blank" rel="noopener"><img src="${esc(s)}" alt="" loading="lazy"/></a>`).join("");
       const tags = (d.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
-      return `<div class="card">
-        <span class="type">${esc(d.type || "demo")}</span>
+      const featured = isFeatured(d);
+      return `<div class="card${featured ? " is-featured" : ""}">
+        <div class="badge-row">
+          <span class="type">${esc(d.type || "demo")}</span>
+          ${featured ? '<span class="featured">★ Featured</span>' : ""}
+        </div>
         <h3>${esc(d.title)}</h3>
         <p class="summary">${esc(d.summary)}</p>
         ${shots ? `<div class="shots">${shots}</div>` : ""}
