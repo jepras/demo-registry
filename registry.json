@@ -170,7 +170,10 @@
       "title": "Crewing agent",
       "type": "demo",
       "url": "https://ca-crewing-react.lemonglacier-39e18a8e.swedencentral.azurecontainerapps.io/",
-      "screenshots": [],
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-10-3e89bffa.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-10-dd447883.png"
+      ],
       "tags": [
         "agent-builder",
         "crewing",
@@ -179,7 +182,7 @@
       "summary": "Agent-builder crewing demo. Login protected - password: IM-agentic-crewing-26. Author: Michel Poesze.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03",
-      "edited": "2026-07-03"
+      "edited": "2026-07-10"
     },
     {
       "id": "2026-07-03-fuji-deviation-management",
