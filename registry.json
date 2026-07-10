@@ -152,7 +152,9 @@
       "title": "Project method",
       "type": "demo",
       "url": "https://ca-benefit-react.victoriousocean-e7e97192.swedencentral.azurecontainerapps.io/deliverables",
-      "screenshots": [],
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-10-a69c11ca.png"
+      ],
       "tags": [
         "agent-builder",
         "project-method",
@@ -161,7 +163,7 @@
       "summary": "Agent-builder demo showing a project-method deliverables view. Author: Michel Poesze.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03",
-      "edited": "2026-07-03"
+      "edited": "2026-07-10"
     },
     {
       "id": "2026-07-03-crewing-agent",
