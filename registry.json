@@ -255,6 +255,25 @@
       "addedBy": "Anastasia Frøsig",
       "added": "2026-07-03",
       "edited": "2026-07-03"
+    },
+    {
+      "id": "2026-07-10-car-loan-front-back",
+      "title": "Car loan - front & back",
+      "type": "demo",
+      "url": "https://claude.ai/artifacts/latest/7ab62eb6-fa25-42e3-99f1-ea36b34782f0",
+      "screenshots": [],
+      "tags": [
+        "car-loan",
+        "banking",
+        "agentic",
+        "front-and-back",
+        "credit",
+        "advisory",
+        "human-in-the-loop"
+      ],
+      "summary": "A 'front & back' walkthrough of an agentic car-loan application. Left: what the customer and advisor see - a chat plus one mini-app per bank system (Case, Documents, Credit, Advisory, Core). Right: behind the scenes - a 9-stage process ribbon and a top-to-bottom agent graph handling the case. Steps through a DKK 400,000 Audi Q4 e-tron loan over 72 months, with a human approval gate in the Advisory system (you can ask the agent a question in chat before approving).",
+      "addedBy": "jere@thetechcollective.eu",
+      "added": "2026-07-10"
     }
   ]
 }
