@@ -200,7 +200,10 @@
       "title": "AI report builder",
       "type": "video",
       "url": "https://drive.google.com/file/d/1jG3ffJdzS9lR3q58rB19WdtrgGxLBMIU/view?usp=drive_link",
-      "screenshots": [],
+      "screenshots": [
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-10-4513ea31.png",
+        "https://raw.githubusercontent.com/jepras/demo-registry/main/screenshots/2026-07-10-075789eb.png"
+      ],
       "tags": [
         "document-creator",
         "reporting",
@@ -209,7 +212,7 @@
       "summary": "Creates professional reports in minutes from uploaded data; exports to PDF, PPTX or DOCX.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-03",
-      "edited": "2026-07-03"
+      "edited": "2026-07-10"
     },
     {
       "id": "2026-07-03-complaint-document-agent-klageskrift",
