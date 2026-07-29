@@ -254,7 +254,7 @@
       "summary": "Ten AI Agents running order entry, order processing, invoicing and stock replenishment instead of traditional Customer Service.\n\nA PO arrives by email in PDF format. Agents take it from there: one extracts the data from the PDF, converts units against the ERP automatically, checks for third-party material, tracks delivery and installation status, and drafts and sends the invoice. Two agents run independently of any single order, one watches the inbox, one monitors stock levels and automatically creates replenishment orders. The associate steps in only to approve the order and the invoice.",
       "addedBy": "Anastasia Frøsig",
       "added": "2026-07-03",
-      "edited": "2026-07-03"
+      "edited": "2026-07-29"
     },
     {
       "id": "2026-07-10-car-loan-front-back",
