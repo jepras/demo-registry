@@ -300,6 +300,23 @@
       "summary": "Front + back office demo of the S&OE prep agent (Agent 1 of the cycle) for Lundbeck. Wakes on the meeting invite at T-2 days, pulls APS, CRM and the action tracker, drafts the pre-read, and hands it to the planner to approve and distribute. The allocation conflict is flagged for the meeting to decide, never proposed by the agent.",
       "addedBy": "jere@thetechcollective.eu",
       "added": "2026-07-10"
+    },
+    {
+      "id": "2026-08-14-order-to-invoice-agentic-demo",
+      "title": "Order-to-Invoice Agentic Demo",
+      "type": "demo",
+      "url": "https://claude.ai/artifacts/latest/fb033450-7874-48d6-8859-ac1142dfc55d",
+      "screenshots": [],
+      "tags": [
+        "agentic-ai",
+        "order-to-cash",
+        "customer-care",
+        "sap",
+        "salesforce"
+      ],
+      "summary": "Back-office order entry and invoicing (PO intake to dispatch) redesigned with 10 agents; two human approval gates retained (order approval, invoice approval).",
+      "addedBy": "Anastasia",
+      "added": "2026-08-14"
     }
   ]
 }
