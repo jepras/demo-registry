@@ -66,7 +66,8 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    input[type="search"], input[type="text"], input[type="url"], textarea, select {
+    input[type="search"], input[type="text"], input[type="url"],
+    input[type="password"], input[type="email"], textarea, select {
       background: var(--background);
       border: 1px solid var(--input);
       color: var(--foreground);
@@ -237,6 +238,7 @@
     label { font-size: 13px; color: var(--foreground); font-weight: 500; display: flex; flex-direction: column; gap: 5px; }
     .row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
     .status { font-size: 13px; padding: 8px 0; }
+    .status:empty { display: none; }
     .status.ok { color: oklch(0.52 0.13 155); }
     .status.err { color: var(--destructive); }
     .empty { text-align: center; color: var(--muted-foreground); padding: 48px; }
@@ -286,6 +288,8 @@
     }
     .gate-card h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
     .gate-card .sub { margin: 0; }
+    .gate-card label { gap: 6px; margin-top: 4px; }
+    .gate-card button[type="submit"] { width: 100%; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -293,7 +297,7 @@
     <form class="gate-card" id="gateForm">
       <h2>Demo registry</h2>
       <p class="sub">This site is password protected. Ask your host for the password.</p>
-      <label>Password<input type="password" id="gatePassword" autocomplete="current-password" autofocus required /></label>
+      <label for="gatePassword">Password<input type="password" id="gatePassword" placeholder="Enter password" autocomplete="current-password" autofocus required /></label>
       <div class="status err" id="gateStatus"></div>
       <button type="submit">Sign in</button>
       <p class="sub" style="font-size:12px;">Hint: it's the Hellerup wifi guest password.</p>
@@ -394,19 +398,12 @@
     // OUR_FORMAT_IDS is only for skill-built demos hosted somewhere else.
     const OUR_FORMAT_MARKER = "claude.ai/artifacts";
     const OUR_FORMAT_IDS = [];
-    // Links that are dead or permission-gated. Cards stay visible but dimmed
-    // and sort last — every one of these is one sharing/redeploy fix away from
-    // working, so they're flagged rather than hidden.
-    // Remove an id here once its link is live again.
-    const UNAVAILABLE_IDS = [
-      "2026-06-19-agentic-loan-workflow-pitch",          // url is still the example.com placeholder
-      "2026-07-03-home-loan-agent",                      // SharePoint 403
-      "2026-07-03-credit-assessment-agent",              // SharePoint 403
-      "2026-07-03-complaint-document-agent-klageskrift", // Google Drive 401
-      "2026-07-03-crewing-agent",                        // container app gone (DNS)
-      "2026-07-03-project-method",                       // container app gone (DNS)
-      "2026-07-03-fuji-deviation-management",            // container app stopped (404)
-    ];
+    // Links that are dead or permission-gated. A card listed here stays
+    // **visible and searchable** but is dimmed, badged "Link needs fixing", and
+    // sorts to the bottom of its section. It is a to-do flag, NOT a delete —
+    // to actually hide an entry, set deleted_at in D1 (see CLAUDE.md).
+    // Empty right now: the 7 previously-listed demos were retired in D1 instead.
+    const UNAVAILABLE_IDS = [];
     // ───────────────────────────────────────────────────────────────────────
 
     const featuredRank = new Map(FEATURED_IDS.map((id, i) => [id, i]));

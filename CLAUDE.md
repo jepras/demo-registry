@@ -11,7 +11,7 @@ kept only for reference. Nothing reads it. Don't edit it, don't resurrect it.
 `backup/registry.snapshot-2026-08-25.json` is the verified copy taken at
 migration time.
 
-To look at the live data:
+8 of the 16 rows are live; the other 8 are soft-deleted. To look at the live data:
 
 ```bash
 cd worker
@@ -51,6 +51,9 @@ touches them:
   **visible and searchable** but is dimmed, gets a "Link needs fixing" badge, and
   sorts to the bottom of its section. Remove an id once its link works again.
   This is a to-do flag, *not* a delete — for that, use `deleted_at` above.
+  **Currently empty:** the 7 demos that used to sit here were retired in D1 on
+  2026-08-25 instead. Keep the mechanism; it's the right tool for a link that's
+  worth fixing rather than hiding.
 - `OUR_FORMAT_MARKER` / `OUR_FORMAT_IDS` — splits the "Our format" section from
   "Other demos".
 
