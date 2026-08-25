@@ -59,8 +59,10 @@ touches them:
   **Currently empty:** the 7 demos that used to sit here were retired in D1 on
   2026-08-25 instead. Keep the mechanism; it's the right tool for a link that's
   worth fixing rather than hiding.
-- `OUR_FORMAT_MARKER` / `OUR_FORMAT_IDS` — splits the "Our format" section from
-  "Other demos".
+- `OUR_FORMAT_MARKER` / `OUR_FORMAT_IDS` — splits the two sections defined in
+  `SECTIONS`: "Demos created with agentic-demo-builder skill" vs "Other".
+  Membership is detected by URL (`claude.ai/artifacts`), so new submissions sort
+  themselves; `OUR_FORMAT_IDS` is only for skill-built demos hosted elsewhere.
 
 ## Deploy
 
