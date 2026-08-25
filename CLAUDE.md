@@ -2,7 +2,12 @@
 
 A searchable catalogue of demos. `index.html` is a static GitHub Pages site; it
 reads and writes through one Cloudflare Worker (`worker/`) backed by a **D1
-database**. Screenshots still live in `screenshots/` in this repo.
+database**. Screenshots still live in `screenshots/` in this repo — that is the
+only thing the GitHub token is used for now.
+
+The old design kept the data in `registry.json` and committed to it via the
+GitHub API. That is entirely gone: no raw.githubusercontent read path, no
+append-only CI guard, no `skip-worktree` on the data file.
 
 ## The data lives in D1, not in this repo
 
