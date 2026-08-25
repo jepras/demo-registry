@@ -1,37 +1,67 @@
 # Demo registry — working notes for Claude
 
-A searchable, append-only catalogue of demos. Reads are a static GitHub Pages
-site (`index.html`) that fetches `registry.json`; writes go through a Cloudflare
-Worker (`worker/`) that holds a scoped GitHub token.
+A searchable catalogue of demos. `index.html` is a static GitHub Pages site; it
+reads and writes through one Cloudflare Worker (`worker/`) backed by a **D1
+database**. Screenshots still live in `screenshots/` in this repo.
 
-## ⚠️ `registry.json` is remote-owned — do NOT overwrite it
+## The data lives in D1, not in this repo
 
-Demos are submitted through the site's "Add a demo" form. The Worker commits
-them **directly to `registry.json` on `main`** — they never pass through anyone's
-local checkout. So your local copy goes stale the moment someone submits, and
-pushing a stale copy would **silently revert their submission or edit**.
+`registry.json` is a **frozen historical snapshot** — the pre-migration data,
+kept only for reference. Nothing reads it. Don't edit it, don't resurrect it.
+`backup/registry.snapshot-2026-08-25.json` is the verified copy taken at
+migration time.
 
-The CI guard (`.github/workflows/append-only.yml`) only fails on *deletions* — an
-in-place revert of an edited/added entry passes CI unnoticed. Treat `registry.json`
-as append-only remote state you read, not data you author.
+To look at the live data:
 
-Rules:
-- **Never** hand-edit `registry.json` and push it, unless the user explicitly asks.
-- **Always** `git pull` (or fetch + fast-forward) immediately before any commit
-  that could include `registry.json`, so you're not carrying a stale copy.
-- Prefer committing **only** the files you changed (e.g. `git add index.html`) so
-  a stale `registry.json` in the working tree can't ride along.
-- To feature/reorder demos, **do not** touch the data. Edit `FEATURED_IDS` in
-  `index.html` — a list under our control that the Worker never writes to.
+```bash
+cd worker
+wrangler d1 execute demo-registry --remote \
+  --command "select id, title, added from demos where deleted_at is null order by added desc"
+```
 
-## Featuring & ordering (frontend, in `index.html`)
+## What can and cannot change over HTTP
 
-- Cards render most-recent-first (`added` date). Featured demos are pinned above
-  that, in `FEATURED_IDS` array order, with a "★ Featured" badge.
-- Pin a demo by adding its `id` (from `registry.json`) to `FEATURED_IDS`.
+- **Add** — anyone past the site's password gate. `POST /` with no `id`.
+- **Edit** — anyone. `POST /` with an `id`. Only title, type, url, summary, tags
+  and screenshots are writable; `id`, `added` and `added_by` are never
+  overwritten (the UPDATE names its columns explicitly), and `edited` is stamped.
+- **Delete** — **not possible over HTTP.** No delete route, no DELETE method.
+
+## Retiring a demo (maintainer only)
+
+Soft delete, so it's reversible and the row is never actually gone:
+
+```bash
+wrangler d1 execute demo-registry --remote \
+  --command "update demos set deleted_at = date('now') where id = '<id>'"
+# restore:  ... set deleted_at = null where id = '<id>'
+```
+
+`GET /demos` filters on `deleted_at is null`. This replaced the old `HIDDEN_IDS`
+array in `index.html` — don't reintroduce it.
+
+## Frontend-only lists (in `index.html`)
+
+These are editorial, deliberately *not* in the database, and the Worker never
+touches them:
+
+- `FEATURED_IDS` — pinned to the top of their section, in array order, with a
+  "★ Featured" badge.
+- `UNAVAILABLE_IDS` — links that are dead or permission-gated. The card stays
+  **visible and searchable** but is dimmed, gets a "Link needs fixing" badge, and
+  sorts to the bottom of its section. Remove an id once its link works again.
+  This is a to-do flag, *not* a delete — for that, use `deleted_at` above.
+- `OUR_FORMAT_MARKER` / `OUR_FORMAT_IDS` — splits the "Our format" section from
+  "Other demos".
 
 ## Deploy
 
 - Site: commit + push `index.html` to `main` → GitHub Pages rebuilds
-  (`https://jepras.github.io/demo-registry/`). No build step.
+  (`https://jepras.github.io/demo-registry/`, custom domain
+  `https://demo-registry.ttcai.dev`). No build step.
 - Worker: `cd worker && wrangler deploy` (only when `worker/` changes).
+- Schema change: edit `worker/schema.sql`, apply with
+  `wrangler d1 execute demo-registry --remote --file=schema.sql`.
+
+> `wrangler` may need `env -u CLOUDFLARE_API_TOKEN` if that env var is set — the
+> token in it lacks D1 permission; OAuth (`wrangler login`) has it.

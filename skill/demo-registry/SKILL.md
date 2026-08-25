@@ -5,22 +5,24 @@ description: Check the shared demo registry before building a new demo, and add 
 
 # Demo Registry
 
-A shared, append-only catalogue of demos, prototypes, videos and decks. Use it to
-avoid rebuilding something that already exists, and to register new work so others
-can find it. **Entries can be added but never deleted** — never attempt to remove
-or rewrite existing entries.
+A shared catalogue of demos, prototypes, videos and decks. Use it to avoid
+rebuilding something that already exists, and to register new work so others can
+find it. **Entries can be added and edited, but never deleted** — there is no
+delete endpoint. Never attempt to remove one.
 
 ## Endpoints
 
-- **Read (public, no auth):**
-  `https://raw.githubusercontent.com/jepras/demo-registry/main/registry.json`
-- **Write (add an entry):** POST JSON to the Worker:
+- **Browse (human-facing site):**
+  `https://demo-registry.ttcai.dev`
+- **Read (no auth):** `GET https://demo-registry.jeprasher.workers.dev/demos`
+  Returns `{ "version": 1, "demos": [...] }`. Retired entries are already
+  filtered out server-side.
+- **Write (add or edit):** POST JSON to
   `https://demo-registry.jeprasher.workers.dev`
-  The Worker holds the only credential; you do not need a GitHub token.
 
 ## When a consultant wants to build a demo — ALWAYS check first
 
-1. Fetch the registry JSON from the read URL.
+1. `GET` the read URL above.
 2. Semantically compare the consultant's intent against each entry's `title`,
    `summary`, `tags`, and `type`. Match on meaning, not just keywords.
 3. **If a close match exists**, stop and surface it before any building:
@@ -50,6 +52,14 @@ Content-Type: application/json
 
 The server assigns `id` and `added` (date). On success it returns `{ "ok": true, "id": "…" }`.
 
+### Editing an existing entry
+
+Include the entry's `id` in the same POST body. Only `title`, `type`, `url`,
+`summary`, `tags` and `screenshots` change — `id`, `added` and `addedBy` are
+preserved by the server no matter what you send, and `edited` is stamped.
+Use this to fix a broken link or improve a summary; confirm with the consultant
+first, since edits overwrite the current values.
+
 ### Uploading screenshots
 
 `screenshots` must be http/https image URLs. If you have local image files, upload
@@ -67,5 +77,5 @@ returned URL(s) in the entry's `screenshots` array (max 10).
 ### Rules
 - Required: `title`, `url` (valid http/https), `summary`. Others are optional.
 - `url` and every `screenshots` entry must be valid http/https URLs.
-- Never send requests that try to edit or delete existing entries — the API only appends.
+- Never try to delete an entry — there is no delete endpoint, and it is not something to work around. If a demo is genuinely retired, tell the consultant to ask the maintainer.
 - Write good `tags` and a clear `summary`: they are what future searches match against.

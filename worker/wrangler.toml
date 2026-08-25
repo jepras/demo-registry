@@ -2,12 +2,21 @@ name = "demo-registry"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
+# The catalogue itself. Reads and writes both go through this Worker now —
+# there is no delete route, so entries can only be added or edited over HTTP.
+# Soft-deleting one is a maintainer-only SQL operation (see worker.js header).
+[[d1_databases]]
+binding = "DB"
+database_name = "demo-registry"
+database_id = "1255b7bf-94e4-4ab9-b555-1395ed6f4d9f"
+
 [vars]
+# Only used for screenshot commits now — the catalogue lives in D1.
 REPO_OWNER = "jepras"
 REPO_NAME = "demo-registry"
 REPO_BRANCH = "main"
 # Lock writes to your Pages origin. Use "*" only while testing locally.
-ALLOWED_ORIGIN = "https://jepras.github.io"
+ALLOWED_ORIGIN = "https://demo-registry.ttcai.dev"
 # Optional: public base URL for uploaded screenshots (POST /upload commits them to
 # screenshots/ in the repo). Defaults to the repo's raw.githubusercontent path.
 # SCREENSHOT_BASE_URL = "https://jepras.github.io/demo-registry/screenshots"

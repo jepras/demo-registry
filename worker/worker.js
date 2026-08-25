@@ -1,44 +1,55 @@
 /**
- * Demo Registry — write endpoint.
+ * Demo Registry — read + write endpoint, backed by D1.
  *
- * The ONLY component that holds a GitHub token. Both the public form and the
- * Claude skill POST demo entries here. This Worker reads registry.json, applies
- * the change, and commits it back.
+ *   GET  /demos    — the catalogue. Public (the site's password gate is the only
+ *                    thing in front of it). Returns { version, demos: [...] },
+ *                    the same shape the old registry.json had, so the frontend
+ *                    reads it unchanged.
+ *   POST /          — no `id` in the body: append a new entry.
+ *                     an `id` in the body: edit that entry's mutable fields.
+ *   POST /upload    — multipart image; commits it to screenshots/ in the GitHub
+ *                     repo and returns its public URL. Images stay in git — they
+ *                     don't belong in SQLite.
  *
- *   ADD  (no `id` in the body)  — open to anyone; only ever appends a new entry,
- *                                 never touches existing ones.
- *   EDIT (an `id` in the body)  — updates one existing entry's mutable fields.
- *                                 Never deletes and never changes id / added /
- *                                 addedBy. Open, like adds (no auth).
- *   UPLOAD (POST /upload)       — multipart/form-data with a `file` image field;
- *                                 commits it to screenshots/ and returns its raw
- *                                 URL to drop into an entry's `screenshots` array.
+ * There is deliberately no delete route and no DELETE method. Rows are only ever
+ * inserted or updated, and UPDATE names its columns explicitly so an edit cannot
+ * blank a row out. Hiding an entry is a maintainer-only operation:
  *
- * Secrets (set via `wrangler secret put`):
- *   GITHUB_TOKEN  – fine-grained PAT, scoped to ONLY the registry repo,
- *                   permission: Contents = Read and write. Nothing else.
+ *   wrangler d1 execute demo-registry --remote \
+ *     --command "update demos set deleted_at = date('now') where id = '<id>'"
  *
- * Vars (in wrangler.toml):
- *   REPO_OWNER, REPO_NAME, REPO_BRANCH, ALLOWED_ORIGIN
- *   SCREENSHOT_BASE_URL – optional. Public base URL for committed screenshots.
- *                         Defaults to the repo's raw.githubusercontent path.
+ * Because that is a soft delete, it is reversible — set deleted_at back to null.
+ *
+ * Bindings (wrangler.toml):
+ *   DB            – D1 database
+ *   REPO_OWNER, REPO_NAME, REPO_BRANCH, ALLOWED_ORIGIN, SCREENSHOT_BASE_URL
+ * Secrets (wrangler secret put):
+ *   GITHUB_TOKEN  – fine-grained PAT, Contents: Read and write on this repo only.
+ *                   Now used *only* for screenshot commits.
  */
 
 const GH_API = "https://api.github.com";
-const FILE_PATH = "registry.json";
-const MAX_RETRIES = 3; // handle concurrent-write SHA conflicts
 
 export default {
   async fetch(request, env) {
     const cors = corsHeaders(env);
+    const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
 
     if (request.method === "OPTIONS") return new Response(null, { headers: cors });
-    if (request.method !== "POST")
-      return json({ error: "Use POST" }, 405, cors);
 
-    // Image upload path — commits the file to screenshots/ and returns its URL.
-    // The returned URL is what callers put in an entry's `screenshots` array.
-    if (new URL(request.url).pathname.replace(/\/+$/, "").endsWith("/upload")) {
+    if (request.method === "GET") {
+      if (path !== "/demos") return json({ error: "Not found" }, 404, cors);
+      try {
+        return json({ version: 1, demos: await listDemos(env) }, 200, cors);
+      } catch (e) {
+        return json({ error: e.message || "Read failed" }, 500, cors);
+      }
+    }
+
+    if (request.method !== "POST")
+      return json({ error: "Use GET /demos or POST /" }, 405, cors);
+
+    if (path === "/upload") {
       try {
         const result = await handleUpload(request, env);
         return json({ ok: true, url: result.url }, 200, cors);
@@ -64,7 +75,7 @@ export default {
         : await appendEntry(env, entry);
       return json({ ok: true, id: result.id }, 200, cors);
     } catch (e) {
-      return json({ error: e.message || "Server error" }, 500, cors);
+      return json({ error: e.message || "Server error" }, e.status || 500, cors);
     }
   }
 };
@@ -72,7 +83,7 @@ export default {
 function corsHeaders(env) {
   return {
     "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json"
   };
@@ -80,6 +91,12 @@ function corsHeaders(env) {
 
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers });
+}
+
+function httpError(message, status) {
+  const e = new Error(message);
+  e.status = status;
+  return e;
 }
 
 function sanitize(b) {
@@ -109,121 +126,87 @@ function slugify(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
 }
 
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Rows store tags/screenshots as JSON text; the API speaks arrays.
+function rowToEntry(r) {
+  const parse = v => { try { const a = JSON.parse(v); return Array.isArray(a) ? a : []; } catch { return []; } };
+  const e = {
+    id: r.id,
+    title: r.title,
+    type: r.type,
+    url: r.url,
+    screenshots: parse(r.screenshots),
+    tags: parse(r.tags),
+    summary: r.summary,
+    addedBy: r.added_by || "",
+    added: r.added
+  };
+  if (r.edited) e.edited = r.edited;
+  return e;
+}
+
+// ── Read ───────────────────────────────────────────────────────────────────
+
+async function listDemos(env) {
+  const { results } = await env.DB.prepare(
+    `select id, title, type, url, summary, tags, screenshots, added_by, added, edited
+       from demos
+      where deleted_at is null
+      order by added desc, id desc`
+  ).all();
+  return (results || []).map(rowToEntry);
+}
+
+// ── Write ──────────────────────────────────────────────────────────────────
+
+// Append only. `id` is derived from date + title; on collision we suffix and
+// retry rather than overwriting whatever is already sitting on that id.
 async function appendEntry(env, entry) {
-  const { REPO_OWNER, REPO_NAME, GITHUB_TOKEN } = env;
-  const branch = env.REPO_BRANCH || "main";
-  const base = `${GH_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-  const headers = {
-    "Authorization": `Bearer ${GITHUB_TOKEN}`,
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "demo-registry-worker",
-    "X-GitHub-Api-Version": "2022-11-28"
-  };
+  const date = today();
+  const baseId = `${date}-${slugify(entry.title)}` || date;
 
-  const today = new Date().toISOString().slice(0, 10);
+  for (let n = 1; n <= 20; n++) {
+    const id = n === 1 ? baseId : `${baseId}-${n}`;
+    const res = await env.DB.prepare(
+      `insert into demos
+         (id, title, type, url, summary, tags, screenshots, added_by, added)
+       values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       on conflict(id) do nothing`
+    ).bind(
+      id, entry.title, entry.type, entry.url, entry.summary,
+      JSON.stringify(entry.tags), JSON.stringify(entry.screenshots),
+      entry.addedBy || null, date
+    ).run();
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    // 1. Read current file (+ its sha)
-    const getRes = await fetch(`${base}?ref=${branch}`, { headers });
-    if (!getRes.ok) throw new Error(`Read failed: ${getRes.status}`);
-    const file = await getRes.json();
-    const current = JSON.parse(atob(file.content.replace(/\n/g, "")));
-    const demos = current.demos || [];
-
-    // 2. Build the new entry (id derived from date + title; deduped)
-    let id = `${today}-${slugify(entry.title)}`;
-    if (demos.some(d => d.id === id)) id = `${id}-${demos.length + 1}`;
-    const newEntry = { id, ...entry, added: today };
-
-    // 3. Append only
-    const updated = { ...current, demos: [...demos, newEntry] };
-    const content = btoa(JSON.stringify(updated, null, 2) + "\n");
-
-    // 4. Commit with the sha we just read (optimistic concurrency)
-    const putRes = await fetch(base, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({
-        message: `Add demo: ${entry.title}`,
-        content,
-        sha: file.sha,
-        branch
-      })
-    });
-
-    if (putRes.ok) return { id };
-    if (putRes.status === 409) continue; // someone else wrote; retry with fresh sha
-    throw new Error(`Write failed: ${putRes.status}`);
+    // `do nothing` means the id was taken — try the next suffix.
+    if (res.meta.changes > 0) return { id };
   }
-  throw new Error("Write conflict, please retry");
+  throw httpError("Could not allocate an id — try a slightly different title", 409);
 }
 
-// Update one existing entry in place. Only the mutable fields change; id, added
-// and addedBy are preserved, and an `edited` date is stamped. Never deletes.
+// Edit one existing entry in place. Only mutable fields are named, so id, added
+// and added_by survive untouched and nothing can be blanked out. A soft-deleted
+// row is not editable (and stays hidden) until a maintainer restores it.
 async function updateEntry(env, id, entry) {
-  const { REPO_OWNER, REPO_NAME, GITHUB_TOKEN } = env;
-  const branch = env.REPO_BRANCH || "main";
-  const base = `${GH_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-  const headers = {
-    "Authorization": `Bearer ${GITHUB_TOKEN}`,
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "demo-registry-worker",
-    "X-GitHub-Api-Version": "2022-11-28"
-  };
+  const res = await env.DB.prepare(
+    `update demos
+        set title = ?, type = ?, url = ?, summary = ?,
+            tags = ?, screenshots = ?, edited = ?
+      where id = ? and deleted_at is null`
+  ).bind(
+    entry.title, entry.type, entry.url, entry.summary,
+    JSON.stringify(entry.tags), JSON.stringify(entry.screenshots), today(),
+    id
+  ).run();
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    // 1. Read current file (+ its sha)
-    const getRes = await fetch(`${base}?ref=${branch}`, { headers });
-    if (!getRes.ok) throw new Error(`Read failed: ${getRes.status}`);
-    const file = await getRes.json();
-    const current = JSON.parse(atob(file.content.replace(/\n/g, "")));
-    const demos = current.demos || [];
-
-    // 2. Locate the entry and merge only the mutable fields onto it
-    const i = demos.findIndex(d => d.id === id);
-    if (i === -1) throw new Error("Entry not found");
-    const merged = {
-      ...demos[i],
-      title: entry.title,
-      type: entry.type,
-      url: entry.url,
-      screenshots: entry.screenshots,
-      tags: entry.tags,
-      summary: entry.summary,
-      edited: today
-    };
-
-    // 3. Replace in place (same length — nothing added or removed)
-    const nextDemos = demos.slice();
-    nextDemos[i] = merged;
-    const updated = { ...current, demos: nextDemos };
-    const content = btoa(JSON.stringify(updated, null, 2) + "\n");
-
-    // 4. Commit with the sha we just read (optimistic concurrency)
-    const putRes = await fetch(base, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({
-        message: `Edit demo: ${entry.title}`,
-        content,
-        sha: file.sha,
-        branch
-      })
-    });
-
-    if (putRes.ok) return { id };
-    if (putRes.status === 409) continue; // someone else wrote; retry with fresh sha
-    throw new Error(`Write failed: ${putRes.status}`);
-  }
-  throw new Error("Write conflict, please retry");
+  if (res.meta.changes === 0) throw httpError("Entry not found", 404);
+  return { id };
 }
 
-// ── Screenshot uploads ─────────────────────────────────────────────────────
-// Accepts a single image via multipart/form-data (`file` field), commits it to
-// screenshots/ in the repo, and returns its public raw URL. Like adds, this is
-// append-only in spirit: it only ever creates new files with unique names.
+// ── Screenshot uploads (still git-backed) ──────────────────────────────────
 
 const IMG_EXT = {
   "image/png": "png",
@@ -233,12 +216,6 @@ const IMG_EXT = {
   "image/svg+xml": "svg"
 };
 const MAX_IMG_BYTES = 5 * 1024 * 1024; // 5 MB
-
-function httpError(message, status) {
-  const e = new Error(message);
-  e.status = status;
-  return e;
-}
 
 async function handleUpload(request, env) {
   let form;
@@ -255,8 +232,7 @@ async function handleUpload(request, env) {
   if (bytes.length === 0) throw httpError("Empty file", 400);
   if (bytes.length > MAX_IMG_BYTES) throw httpError("Image exceeds 5 MB", 413);
 
-  const today = new Date().toISOString().slice(0, 10);
-  const name = `${today}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+  const name = `${today()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
   await commitFile(env, `screenshots/${name}`, base64(bytes), `Add screenshot: ${name}`);
 
   const baseUrl = (env.SCREENSHOT_BASE_URL ||

@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script>
+    // Runs before any CSS/content paints, so an already-authed visitor (within
+    // the last 12h) never sees the gate flash. Kept in sync with the fuller
+    // gate logic near the end of <body> — see the comment there for why this
+    // is a client-side, not a real, gate.
+    try {
+      const s = JSON.parse(localStorage.getItem("demoRegistryAuth") || "null");
+      if (s && s.exp > Date.now()) document.documentElement.classList.add("gate-ok");
+    } catch {}
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Demo registry</title>
@@ -246,9 +256,49 @@
       gap: 6px;
     }
     label.needs-action .hint::before { content: "↑"; font-size: 15px; }
+
+    /* ── Password gate ──────────────────────────────────────────────────── */
+    /* Hides everything else until the gate is passed (see the inline script
+       right after <body>, which sets .gate-ok on <html> as early as possible
+       to avoid a flash of the real content for already-authed visitors). */
+    html:not(.gate-ok) body > *:not(#gate) { display: none !important; }
+    #gate {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--muted);
+    }
+    html.gate-ok #gate { display: none; }
+    .gate-card {
+      width: 92%;
+      max-width: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .gate-card h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+    .gate-card .sub { margin: 0; }
   </style>
 </head>
 <body>
+  <div id="gate">
+    <form class="gate-card" id="gateForm">
+      <h2>Demo registry</h2>
+      <p class="sub">This site is password protected. Ask your host for the password.</p>
+      <label>Password<input type="password" id="gatePassword" autocomplete="current-password" autofocus required /></label>
+      <div class="status err" id="gateStatus"></div>
+      <button type="submit">Sign in</button>
+      <p class="sub" style="font-size:12px;">Hint: it's the Hellerup wifi guest password.</p>
+    </form>
+  </div>
   <header>
     <h1>Demo registry</h1>
     <p class="sub">A searchable, append-only catalogue of demos, videos, prototypes and decks. Check here before building something new.</p>
@@ -291,15 +341,48 @@
   </dialog>
 
   <script>
+    // ── Password gate ──────────────────────────────────────────────────────
+    // Client-side only: this is a static GitHub Pages site with no server to
+    // reject a request before it's served, unlike the cookie-session gate in
+    // front of /agentic-demo. This just needs to *look* protected to a casual
+    // visitor — anyone who opens devtools can read GATE_HASH or fetch
+    // registry.json directly regardless. The write endpoint Claude/the form
+    // POST to (WORKER_URL, below) is a separate origin and is deliberately
+    // left open either way.
+    //
+    // Password isn't stored in plaintext (a SHA-256 hash instead), but that's
+    // a speed bump, not real secrecy — don't put anything sensitive behind this.
+    const GATE_HASH = "35f64e71a57f610ed5b0df2aabf27dc843eeb744972651a548634bcdaa6d438a";
+    const GATE_TTL_MS = 12 * 60 * 60 * 1000; // 12h, same session length as agentic-demo
+
+    async function sha256Hex(text) {
+      const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+      return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    document.getElementById("gateForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("gatePassword");
+      const statusEl = document.getElementById("gateStatus");
+      if ((await sha256Hex(input.value)) !== GATE_HASH) {
+        statusEl.textContent = "That password isn't right.";
+        input.value = "";
+        input.focus();
+        return;
+      }
+      localStorage.setItem("demoRegistryAuth", JSON.stringify({ exp: Date.now() + GATE_TTL_MS }));
+      document.documentElement.classList.add("gate-ok");
+    });
+    // ───────────────────────────────────────────────────────────────────────
+
     // ── Config ─────────────────────────────────────────────────────────────
-    // Raw registry file (read path — public, no auth).
-    const REGISTRY_URL = "https://raw.githubusercontent.com/jepras/demo-registry/main/registry.json";
-    // Cloudflare Worker endpoint (write path — holds the scoped token server-side).
-    // Replace after deploying the Worker.
+    // Cloudflare Worker endpoint. Both reads (GET /demos) and writes (POST /)
+    // go through it — the catalogue lives in a D1 database behind it.
     const WORKER_URL = "https://demo-registry.jeprasher.workers.dev";
+    const REGISTRY_URL = WORKER_URL + "/demos";
     // Featured demos, pinned to the top of the list regardless of date.
-    // Kept here (not in registry.json) because submissions are appended
-    // directly to the remote registry — this list stays under our control.
+    // Kept here (not in the database) because submissions write straight to
+    // D1 — this list stays under our control.
     // Add a demo's "id" to feature it; order here sets order among featured.
     const FEATURED_IDS = [
       "2026-08-14-order-to-invoice-agentic-demo",
@@ -312,8 +395,8 @@
     const OUR_FORMAT_MARKER = "claude.ai/artifacts";
     const OUR_FORMAT_IDS = [];
     // Links that are dead or permission-gated. Cards stay visible but dimmed
-    // and sort last — we can't delete entries (the registry is append-only),
-    // and every one of these is one sharing/redeploy fix away from working.
+    // and sort last — every one of these is one sharing/redeploy fix away from
+    // working, so they're flagged rather than hidden.
     // Remove an id here once its link is live again.
     const UNAVAILABLE_IDS = [
       "2026-06-19-agentic-loan-workflow-pitch",          // url is still the example.com placeholder
@@ -323,10 +406,6 @@
       "2026-07-03-crewing-agent",                        // container app gone (DNS)
       "2026-07-03-project-method",                       // container app gone (DNS)
       "2026-07-03-fuji-deviation-management",            // container app stopped (404)
-    ];
-    // Superseded duplicates. Same reason as above — hidden, not deleted.
-    const HIDDEN_IDS = [
-      "2026-07-03-order-to-invoice-agentic-demo", // same artifact as the 2026-08-14 entry
     ];
     // ───────────────────────────────────────────────────────────────────────
 
@@ -341,11 +420,12 @@
       try {
         const res = await fetch(REGISTRY_URL + "?t=" + Date.now());
         const data = await res.json();
-        demos = sortDemos((data.demos || []).filter(d => !HIDDEN_IDS.includes(d.id)));
+        // Suppressed entries are filtered out server-side (deleted_at).
+        demos = sortDemos(data.demos || []);
         render(demos);
       } catch (e) {
         document.getElementById("grid").innerHTML =
-          '<div class="empty">Could not load the registry. Check REGISTRY_URL.</div>';
+          '<div class="empty">Could not load the registry. Check the Worker is up.</div>';
       }
     }
 
@@ -436,7 +516,7 @@
       document.getElementById("uploadField").classList.remove("needs-action");
       document.getElementById("editId").value = "";
       document.getElementById("dialogTitle").textContent = "Add a demo";
-      document.getElementById("dialogNote").textContent = "New entries are appended — existing ones are never removed.";
+      document.getElementById("dialogNote").textContent = "New entries are added — existing ones are never removed.";
       document.getElementById("submitBtn").textContent = "Add demo";
       document.getElementById("status").textContent = "";
       dialog.showModal();
