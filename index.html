@@ -144,6 +144,47 @@
       width: fit-content;
     }
     .card.is-featured { border-color: var(--ring); }
+
+    /* Section headers ("Our format" / "Other demos"). They live inside the
+       grid, so they span every column to act as a full-width divider. */
+    .section-head { grid-column: 1 / -1; margin: 8px 0 0; }
+    .section-head:not(:first-child) { margin-top: 28px; }
+    .section-head h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-head .count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      background: var(--muted);
+      border-radius: 999px;
+      padding: 1px 8px;
+    }
+    .section-head .sub { font-size: 13px; }
+
+    /* Demos whose link is dead or permission-gated (see UNAVAILABLE_IDS).
+       Dimmed rather than removed: the registry is append-only, and each one
+       becomes live again the moment its link or sharing is fixed. */
+    .card.is-unavailable { opacity: .6; background: var(--muted); }
+    .card.is-unavailable:hover { opacity: 1; }
+    .unavailable {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      background: var(--card);
+      color: var(--muted-foreground);
+      border: 1px dashed var(--border);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-weight: 500;
+      width: fit-content;
+    }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .tag {
       font-size: 12px;
@@ -261,13 +302,38 @@
     // directly to the remote registry — this list stays under our control.
     // Add a demo's "id" to feature it; order here sets order among featured.
     const FEATURED_IDS = [
-      "2026-07-03-order-to-invoice-agentic-demo",
+      "2026-08-14-order-to-invoice-agentic-demo",
       "2026-07-10-car-loan-front-back",
+    ];
+    // Demos built with the Claude demo skill are grouped separately from
+    // everything that came before it. Detected by URL (skill-built demos are
+    // published as Claude artifacts) so new submissions sort themselves —
+    // OUR_FORMAT_IDS is only for skill-built demos hosted somewhere else.
+    const OUR_FORMAT_MARKER = "claude.ai/artifacts";
+    const OUR_FORMAT_IDS = [];
+    // Links that are dead or permission-gated. Cards stay visible but dimmed
+    // and sort last — we can't delete entries (the registry is append-only),
+    // and every one of these is one sharing/redeploy fix away from working.
+    // Remove an id here once its link is live again.
+    const UNAVAILABLE_IDS = [
+      "2026-06-19-agentic-loan-workflow-pitch",          // url is still the example.com placeholder
+      "2026-07-03-home-loan-agent",                      // SharePoint 403
+      "2026-07-03-credit-assessment-agent",              // SharePoint 403
+      "2026-07-03-complaint-document-agent-klageskrift", // Google Drive 401
+      "2026-07-03-crewing-agent",                        // container app gone (DNS)
+      "2026-07-03-project-method",                       // container app gone (DNS)
+      "2026-07-03-fuji-deviation-management",            // container app stopped (404)
+    ];
+    // Superseded duplicates. Same reason as above — hidden, not deleted.
+    const HIDDEN_IDS = [
+      "2026-07-03-order-to-invoice-agentic-demo", // same artifact as the 2026-08-14 entry
     ];
     // ───────────────────────────────────────────────────────────────────────
 
     const featuredRank = new Map(FEATURED_IDS.map((id, i) => [id, i]));
     const isFeatured = d => featuredRank.has(d.id);
+    const isOurFormat = d => String(d.url || "").includes(OUR_FORMAT_MARKER) || OUR_FORMAT_IDS.includes(d.id);
+    const isUnavailable = d => UNAVAILABLE_IDS.includes(d.id);
 
     let demos = [];
 
@@ -275,7 +341,7 @@
       try {
         const res = await fetch(REGISTRY_URL + "?t=" + Date.now());
         const data = await res.json();
-        demos = sortDemos(data.demos || []);
+        demos = sortDemos((data.demos || []).filter(d => !HIDDEN_IDS.includes(d.id)));
         render(demos);
       } catch (e) {
         document.getElementById("grid").innerHTML =
@@ -283,10 +349,13 @@
       }
     }
 
-    // Featured demos (see FEATURED_IDS) are pinned to the top in list order;
-    // the rest follow, most recent first. Ties fall back to a stable id sort.
+    // Within each section: featured demos (see FEATURED_IDS) pin to the top in
+    // list order, then the rest most recent first, then anything unavailable.
+    // Ties fall back to a stable id sort.
     function sortDemos(list) {
       return list.slice().sort((a, b) => {
+        const ua = isUnavailable(a), ub = isUnavailable(b);
+        if (ua !== ub) return ua ? 1 : -1;
         const fa = isFeatured(a), fb = isFeatured(b);
         if (fa && fb) return featuredRank.get(a.id) - featuredRank.get(b.id);
         if (fa !== fb) return fa ? -1 : 1;
@@ -302,10 +371,12 @@
       const shots = (d.screenshots || []).map(s => `<a href="${esc(s)}" target="_blank" rel="noopener"><img src="${esc(s)}" alt="" loading="lazy"/></a>`).join("");
       const tags = (d.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("");
       const featured = isFeatured(d);
-      return `<div class="card${featured ? " is-featured" : ""}">
+      const unavailable = isUnavailable(d);
+      return `<div class="card${featured ? " is-featured" : ""}${unavailable ? " is-unavailable" : ""}">
         <div class="badge-row">
           <span class="type">${esc(d.type || "demo")}</span>
           ${featured ? '<span class="featured">★ Featured</span>' : ""}
+          ${unavailable ? '<span class="unavailable">Link needs fixing</span>' : ""}
         </div>
         <h3>${esc(d.title)}</h3>
         <p class="summary">${esc(d.summary)}</p>
@@ -319,10 +390,32 @@
       </div>`;
     }
 
+    // Rendered as two sections so it's obvious which demos follow our format.
+    // Empty sections are skipped, which matters while searching.
+    const SECTIONS = [
+      {
+        title: "Our format",
+        note: "Built with the Claude demo skill — the shared format we're standardising on.",
+        match: isOurFormat,
+      },
+      {
+        title: "Other demos",
+        note: "Created before or without the Claude skill. Mixed formats: videos, prototypes and one-off apps.",
+        match: d => !isOurFormat(d),
+      },
+    ];
+
     function render(list) {
       const grid = document.getElementById("grid");
       if (!list.length) { grid.innerHTML = '<div class="empty">No demos yet. Be the first to add one.</div>'; return; }
-      grid.innerHTML = list.map(card).join("");
+      grid.innerHTML = SECTIONS
+        .map(s => ({ ...s, items: list.filter(s.match) }))
+        .filter(s => s.items.length)
+        .map(s => `<div class="section-head">
+            <h2>${esc(s.title)} <span class="count">${s.items.length}</span></h2>
+            <p class="sub">${esc(s.note)}</p>
+          </div>` + s.items.map(card).join(""))
+        .join("");
     }
 
     document.getElementById("search").addEventListener("input", e => {
