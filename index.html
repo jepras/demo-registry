@@ -272,8 +272,15 @@
       font-size: 13px;
       color: var(--muted-foreground);
     }
+    /* Position indicator only — deliberately NOT clickable. The dots are 6px
+       targets sitting on top of a full-card link, which made every attempt to
+       change image open the demo instead. Arrows do the navigating.
+       z-index lives HERE, not on the children: backdrop-filter creates a
+       stacking context, so a z-index on a child would be trapped inside this
+       box and still lose to .card-hit. */
     .dots {
       position: absolute;
+      z-index: 2;                 /* above .card-hit */
       bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
@@ -283,21 +290,54 @@
       border-radius: 999px;
       background: rgb(0 0 0 / 0.45);
       backdrop-filter: blur(4px);
+      pointer-events: none;
     }
     .dot {
-      position: relative;
-      z-index: 2;                 /* above .card-hit */
       width: 6px;
       height: 6px;
       padding: 0;
       border: none;
       border-radius: 50%;
       background: rgb(255 255 255 / 0.45);
-      cursor: pointer;
       transition: background-color .15s;
     }
-    .dot:hover { background: rgb(255 255 255 / 0.75); }
     .dot.is-active { background: #fff; }
+    /* Prev/next arrows. Same stacking-context rule as .dots: z-index goes on the
+       button itself, which has no filter of its own, so it genuinely sits above
+       the card link. Visible on card hover, and always visible once focused so
+       keyboard users can find them. */
+    .nav {
+      position: absolute;
+      z-index: 2;                 /* above .card-hit */
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgb(0 0 0 / 0.45);
+      color: #fff;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity .15s, background-color .15s;
+    }
+    .nav.prev { left: 8px; }
+    .nav.next { right: 8px; }
+    .card:hover .nav, .nav:focus-visible { opacity: 1; }
+    .nav:hover { background: rgb(0 0 0 / 0.7); }
+    .nav:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+    /* At the first/last image the arrow stays laid out but stops responding, so
+       the row of images doesn't shift and there's no dead-looking gap. */
+    .nav[disabled] { opacity: 0 !important; pointer-events: none; }
+    .nav svg { width: 16px; height: 16px; }
+    /* Touch has no hover, so show the controls permanently there. */
+    @media (hover: none) {
+      .nav { opacity: 1; }
+    }
     .title-row { display: flex; align-items: flex-start; gap: 8px; }
     .title-row h3 { flex: 1; min-width: 0; }
     /* Icon-only, ghost until hovered, so it never competes with the card click. */
@@ -556,17 +596,24 @@
 
     // lucide square-pen
     const PENCIL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.4 2.6a2 2 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>`;
+    // lucide chevron-left / chevron-right
+    const CHEV_L = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>`;
+    const CHEV_R = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>`;
 
     function card(d) {
       const list = d.screenshots || [];
       // Plain images, not links — clicking anywhere on the card opens the demo.
       const slides = list.map(s => `<img src="${esc(s)}" alt="" loading="lazy"/>`).join("");
-      const dots = list.length > 1
-        ? `<div class="dots">${list.map((_, i) => `<button class="dot${i ? "" : " is-active"}" data-slide="${i}" aria-label="Screenshot ${i + 1}"></button>`).join("")}</div>`
+      // Dots show position; the arrows are what you click. Both only appear when
+      // there's more than one image to move between.
+      const controls = list.length > 1
+        ? `<div class="dots">${list.map((_, i) => `<span class="dot${i ? "" : " is-active"}"></span>`).join("")}</div>
+           <button class="nav prev" data-dir="-1" aria-label="Previous screenshot" disabled>${CHEV_L}</button>
+           <button class="nav next" data-dir="1" aria-label="Next screenshot">${CHEV_R}</button>`
         : "";
       // The hero box renders even with no screenshots, so every card is the same height.
       const hero = slides
-        ? `<div class="shots"><div class="shots-track">${slides}</div>${dots}</div>`
+        ? `<div class="shots"><div class="shots-track">${slides}</div>${controls}</div>`
         : `<div class="shots"><div class="shots-empty">No screenshot yet</div></div>`;
       const tagList = d.tags || [];
       const tags = tagList.map(t => `<span class="tag">${esc(t)}</span>`).join("");
@@ -613,14 +660,32 @@
       document.querySelectorAll(".shots").forEach(shots => {
         const track = shots.querySelector(".shots-track");
         const dots = [...shots.querySelectorAll(".dot")];
+        const prev = shots.querySelector(".nav.prev");
+        const next = shots.querySelector(".nav.next");
         if (!track || dots.length < 2) return;
-        track.addEventListener("scroll", () => {
-          const i = Math.round(track.scrollLeft / track.clientWidth);
+
+        const index = () => Math.round(track.scrollLeft / track.clientWidth);
+
+        function sync() {
+          const i = index();
           dots.forEach((dot, n) => dot.classList.toggle("is-active", n === i));
-        }, { passive: true });
-        dots.forEach((dot, n) => dot.addEventListener("click", () => {
-          track.scrollTo({ left: n * track.clientWidth, behavior: "smooth" });
+          if (prev) prev.disabled = i <= 0;
+          if (next) next.disabled = i >= dots.length - 1;
+        }
+
+        track.addEventListener("scroll", sync, { passive: true });
+
+        // The arrows sit on top of .card-hit, so a click here would otherwise
+        // bubble to the card link and navigate away instead of moving the image.
+        [prev, next].forEach(btn => btn && btn.addEventListener("click", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const dir = Number(btn.dataset.dir);
+          const to = Math.min(Math.max(index() + dir, 0), dots.length - 1);
+          track.scrollTo({ left: to * track.clientWidth, behavior: "smooth" });
         }));
+
+        sync();
       });
       document.querySelectorAll(".tags").forEach(fitTags);
     }
